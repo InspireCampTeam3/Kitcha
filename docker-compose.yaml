@@ -21,10 +21,28 @@ services:
       - "3308:3306"
     restart: on-failure
 
+  mongodb:
+    image: mongo:6.0
+    container_name: mongo
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    networks:
+      - kitcha_network
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: on-failure
+
   config-server:
     image: wdd1016/config
     build:
-      context: https://github.com/Team4-Kitcha/Kitcha-BE.git
+      context: ./Kitcha-BE
       dockerfile: Config-server/Dockerfile
     container_name: config-server
     networks:
@@ -140,18 +158,21 @@ services:
   board:
     image: wdd1016/board
     build:
-      context: https://github.com/Team4-Kitcha/Kitcha-Board.git
+      context: ./Kitcha-Board
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      # MYSQL_DATABASE: ${MYSQL_DATABASE}
+      # MYSQL_USER: ${MYSQL_USER}
+      # MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MONGO_DATABASE: ${MONGO_DATABASE}
+      MONGO_USER: ${MONGO_USER}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
     container_name: board
     networks:
       - kitcha_network
     expose:
       - "8080"
     depends_on:
-      mysql:
+      mongodb:
         condition: service_healthy
       eureka:
         condition: service_healthy
