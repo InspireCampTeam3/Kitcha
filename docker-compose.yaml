@@ -69,6 +69,9 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_DATABASE: ${MONGO_DATABASE}
     volumes:
       - ./connect-plugins/confluentinc-kafka-connect-jdbc-10.8.2/lib:/usr/share/java/kafka-connect-jdbc
       - ./connect-plugins/mongodb-kafka-connect-mongodb-1.15.0/lib:/usr/share/java/kafka-connect-mongodb
