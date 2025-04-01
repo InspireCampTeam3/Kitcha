@@ -12,4 +12,4 @@ USER appuser
 
 ENV CLASSPATH=/usr/share/java/kafka-connect-jdbc/*
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["sh", "/entrypoint.sh"]

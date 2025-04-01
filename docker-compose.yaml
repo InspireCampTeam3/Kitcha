@@ -44,6 +44,8 @@ services:
         condition: service_healthy
       mariadb:
         condition: service_healthy
+      mongodb:
+        condition: service_healthy
     ports:
       - "8083:8083"
     container_name: kafka-connect
@@ -61,7 +63,7 @@ services:
       CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
       CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
-      CONNECT_PLUGIN_PATH: "/usr/share/java/kafka-connect-jdbc"
+      CONNECT_PLUGIN_PATH: "/usr/share/java/kafka-connect-jdbc,/usr/share/java/kafka-connect-mongodb"
       CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -69,6 +71,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - ./connect-plugins/confluentinc-kafka-connect-jdbc-10.8.2/lib:/usr/share/java/kafka-connect-jdbc
+      - ./connect-plugins/mongodb-kafka-connect-mongodb-1.15.0/lib:/usr/share/java/kafka-connect-mongodb
       - ./connectors:/kafka-connect/connectors
     networks:
       - kitcha_network
@@ -110,6 +113,8 @@ services:
       retries: 3
     expose:
       - "8071"
+    volumes:
+      - ./Config:/config  # 테스트용
     restart: on-failure
 
   eureka:
@@ -158,7 +163,7 @@ services:
   auth:
     build:
       context: https://github.com/InspireCampTeam3/Kitcha-Authentication.git
-    #      context: ./Kitcha-Authentication
+      # context: ./Kitcha-Authentication
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
@@ -189,7 +194,7 @@ services:
   interest:
     build:
       context: https://github.com/InspireCampTeam3/Kitcha-Interest.git
-    #      context: ./Kitcha-Interest
+      # context: ./Kitcha-Interest
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
@@ -231,6 +236,27 @@ services:
       - "3307:3306"
     restart: on-failure
 
+  mongodb:
+    image: mongo:5.0
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    volumes:
+      - mongo_data:/data/db
+      - ./mongo-init/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+    networks:
+      - kitcha_network
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongo", "--username", "${MONGO_INITDB_ROOT_USERNAME}", "--password", "${MONGO_INITDB_ROOT_PASSWORD}", "--authenticationDatabase", "admin", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: on-failure
+
   file:
     build:
       context: https://github.com/InspireCampTeam3/Kitcha-File.git
@@ -259,7 +285,7 @@ services:
   article:
     build:
       context: https://github.com/InspireCampTeam3/Kitcha-Article.git
-    #      context: ./Kitcha-Article
+      # context: ./Kitcha-Article
     environment:
       NAVER_CLIENT_ID: ${NAVER_CLIENT_ID}
       NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET}
@@ -281,12 +307,11 @@ services:
 
   board:
     build:
-      context: https://github.com/InspireCampTeam3/Kitcha-Board.git
-      # context: ./Kitcha-Board
+      context: ./Kitcha-Board
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_DATABASE: ${MONGO_DATABASE}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_S3_BUCKET: ${AWS_S3_BUCKET}
@@ -296,7 +321,7 @@ services:
     expose:
       - "8080"
     depends_on:
-      mysql:
+      mongodb:
         condition: service_healthy
       eureka:
         condition: service_healthy
@@ -321,6 +346,7 @@ services:
 volumes:
   mysql_data:
   mariadb_data:
+  mongo_data:
 
 networks:
   kitcha_network:
