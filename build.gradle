@@ -8,7 +8,21 @@ allprojects {
 }
 
 subprojects {
-    tasks.withType(Jar) {
-        archiveFileName = "${project.name}.jar"
+    afterEvaluate {
+        if (plugins.hasPlugin('org.springframework.boot')) {
+            // Spring Boot 모듈인 경우, fat jar 생성
+            tasks.withType(org.springframework.boot.gradle.tasks.bundling.BootJar) {
+                archiveFileName = "${project.name}.jar"
+            }
+            // Spring Boot 모듈인 경우, plain jar는 비활성화
+            tasks.withType(Jar) {
+                enabled = false
+            }
+        } else {
+            // Spring Boot 모듈이 아닌 경우, plain jar 생성
+            tasks.withType(Jar) {
+                archiveFileName = "${project.name}.jar"
+            }
+        }
     }
 }
