@@ -2,7 +2,7 @@
     "name": "mysql-user-sink",
     "config": {
         "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
-        "connection.url": "jdbc:mysql://mysql:3306/${MYSQL_DATABASE}",
+        "connection.url": "jdbc:mysql://authdb.c9oywy06ayot.ap-northeast-2.rds.amazonaws.com:3306/${MYSQL_DATABASE}",
         "connection.user": "${MYSQL_USER}",
         "connection.password": "${MYSQL_PASSWORD}",
         "topics": "user",
