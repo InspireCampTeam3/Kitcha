@@ -14,7 +14,7 @@ subprojects {
             tasks.withType(org.springframework.boot.gradle.tasks.bundling.BootJar) {
                 archiveFileName = "${project.name}.jar"
             }
-            // Spring Boot 모듈인 경우, plain jar는 필요하지 않으면 비활성화
+            // Spring Boot 모듈인 경우, plain jar는 비활성화
             tasks.withType(Jar) {
                 enabled = false
             }
