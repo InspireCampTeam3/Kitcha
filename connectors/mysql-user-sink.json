@@ -1,0 +1,17 @@
+{
+    "name": "mysql-user-sink",
+    "config": {
+        "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+        "connection.url": "jdbc:mysql://mysql:3306/${MYSQL_DATABASE}",
+        "connection.user": "${MYSQL_USER}",
+        "connection.password": "${MYSQL_PASSWORD}",
+        "topics": "user",
+        "insert.mode": "upsert",
+        "auto.create": "false",
+        "auto.evolve": "false",
+        "pk.fields": "user_id",
+        "pk.mode": "record_value",
+        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "value.converter.schemas.enable": true
+    }
+}
