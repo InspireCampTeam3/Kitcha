@@ -113,8 +113,6 @@ services:
       retries: 3
     expose:
       - "8071"
-    volumes:
-      - ./Config:/config  # 테스트용
     restart: on-failure
 
   eureka:
